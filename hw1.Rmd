@@ -1,0 +1,135 @@
+---
+title: "hw1"
+output: pdf_document
+---
+## Homework #1
+
+### Exercise 3.1
+Using the famous Galton data set from the mosaicData package:
+
+```{r}
+library(mosaic)
+head(Galton, n=5)
+```
+```{r}
+summary(Galton)
+```
+
+```{r}
+?Galton
+```
+#### 1. Create a scatterplot of each person's height against their father's height
+```{r}
+ggplot(data = Galton, aes(x = father, y = height)) + geom_point(colour="purple") + xlab("Father's Height") + ylab("Height")
+```
+
+#### 2. Separate your plot into facets by sex
+
+```{r}
+ggplot(data = Galton, aes(x = father, y = height)) + geom_point(colour="purple") + xlab("Father's Height") + ylab("Height") + facet_wrap(~sex)
+```
+
+#### 3. Add regression lines to all of your facets
+```{r}
+ggplot(data = Galton, aes(x = father, y = height)) + geom_point(colour="purple") + xlab("Father's Height") + ylab("Height") + facet_wrap(~sex) + geom_smooth(method="lm", colour="green")
+```
+
+### Exercise 3.2
+Using the RailTrail data set from the mosaicData package:
+
+```{r}
+head(RailTrail, n=5)
+```
+
+```{r}
+summary(RailTrail)
+```
+```{r}
+?RailTrail
+```
+#### 1. Create a scatterplot of the number of crossings per day volume against the high temperature that day
+
+```{r}
+ggplot(data = RailTrail, aes(x = volume, y = hightemp)) + geom_point(colour="purple") + xlab("Volume") + ylab("High Temperature (F)")
+```
+
+#### 2. Separate your plot into facets by weekday
+
+```{r}
+ggplot(data = RailTrail, aes(x = volume, y = hightemp)) + geom_point(colour="purple") + xlab("Volume") + ylab("High Temperature (F)") + facet_wrap(~weekday)
+```
+
+#### 3. Add regression lines to the two facets
+
+```{r}
+ggplot(data = RailTrail, aes(x = volume, y = hightemp)) + geom_point(colour="purple") + xlab("Volume") + ylab("High Temperature (F)") + facet_wrap(~weekday) + geom_smooth(method="lm", colour="green")
+```
+
+### Exercise 3.3
+Angelica Schuyler Church (1756-1814) was the daughter of New York Governer Philip Schuyler and sister of Elizabeth Schuyler Hamilton. Angelica, New York was named after her. Generate a plot of the reported proportion of babies born with the name Angelica over time and interpret the figure.
+
+```{r}
+library(babynames) 
+head(babynames, n=5)
+```
+
+```{r}
+summary(babynames)
+```
+
+```{r}
+?babynames
+```
+
+```{r}
+library(tidyr)
+library(magrittr)
+ggplot(data = babynames %>%
+filter(name=="Angelica"), aes(x = year, y = prop)) +
+geom_line() + xlab("Year") + ylab("Proportion") +
+ggtitle("Proportion of Angelicas") + theme(plot.title = element_text(hjust=0.5))
+```
+
+### Exercise 3.4
+The following questions use the Marriage data set from the mosaicData package.
+
+```{r}
+head(Marriage, n = 5)
+```
+
+```{r}
+summary(Marriage)
+```
+
+```{r}
+?Marriage
+```
+
+#### 1. Create an informative and meaningful data graphic.
+
+```{r}
+ggplot(data = Marriage, aes(x = age)) + facet_wrap(~race) + geom_histogram(binwidth = 10, colour="purple") + ggtitle("Marriage Records By Race") + theme(plot.title = element_text(hjust=0.5))
+```
+
+#### 2. Identify each of the visual cues that you are using, and describe how they are related to each variable.
+
+* Position: Title in the center (horizontally). Each facet is grouped by race
+* Length: Age (x axis) ranges from 16.27 to 74.25. Min count (y axis) is 1 (hispanic) and max count is 74 (white).
+* Direction: For american Indian and hispanic there isn't a clear trend (not enough data) but for white and black the count decreases as the person ages. 
+* Color: outlining purple
+
+#### 3. Create a data graphic with at least five variables (either quantitative or categorical). For the purposes of this exercise, do not worry about making your visualization meaningful|just try to encode five variables into one plot.
+
+```{r}
+g1 <-Marriage %>% mutate(col_bool = ifelse(college == 0 | is.na(college), FALSE, TRUE))
+
+ggplot(data = Marriage %>% mutate(group = paste(race,sign,g1, sep="-")), aes(x = age, y=count(appdate), z = group)) + geom_point() + facet_wrap(~race)
+
+```
+
+Here I'm using
+1. race
+2. college 
+3. age
+4. sign
+5. appdate

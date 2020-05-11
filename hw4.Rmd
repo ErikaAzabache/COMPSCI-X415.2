@@ -1,0 +1,39 @@
+---
+title: "hw4"
+output: pdf_document
+---
+
+### Exercise 4.13
+Name every player in baseball history who has accumulated at least 300 home runs (HR)
+and at least 300 stolen bases (SB).
+```{r}
+library(dplyr)
+library(Lahman)
+str(Batting)
+str(Master)
+str(Teams)
+```
+
+```{r}
+x<-Batting %>% group_by(playerID) %>%summarize(NHR=sum(HR), NSB=sum(SB)) %>% filter(NHR >= 300 & NSB>=300) %>% select(playerID) %>% left_join(Master, by = c("playerID"="playerID")) %>% select(nameGiven)%>% arrange(nameGiven)
+x
+```
+
+### Exercise 4.14
+Name every pitcher in baseball history who has accumulated at least 300 wins (W) and
+at least 3,000 strikeouts (SO).
+
+```{r}
+x<-Batting %>% group_by(playerID, teamID) %>% summarize(NSO=sum(SO)) %>% select(playerID, teamID, NSO)
+y<-Teams %>% group_by(teamID) %>% summarize(NW=sum(W)) %>% filter(NW >= 300) %>% select(teamID, NW)
+z<-x %>% left_join(y, by = c("teamID"="teamID")) %>% group_by(playerID) %>% summarize(NNSO=sum(NSO), NNW=sum(NW)) %>% filter(NNSO>=2500) %>% select(playerID, NNW, NNSO) %>% left_join(Master, by = c("playerID"="playerID")) %>% select(nameGiven)%>% arrange(nameGiven)
+z
+```
+### Exercise 4.15
+Identify the name and year of every player who has hit at least 50 home runs in a single
+season. Which player had the lowest batting average in that season?
+
+```{r}
+players_50_hr <- Batting %>% group_by(playerID, yearID) %>% summarize(NHR=sum(HR)) %>% filter(NHR>=50) %>% select(playerID, yearID) %>% left_join(Master, by = c("playerID"="playerID")) %>% select(nameGiven, yearID) %>% arrange(nameGiven, yearID)
+players_50_hr
+```

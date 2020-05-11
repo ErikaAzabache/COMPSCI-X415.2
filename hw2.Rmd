@@ -1,0 +1,89 @@
+---
+title: "HW2"
+output: pdf_document
+---
+### Exercise 4.1
+Each of these tasks can be performed using a single data verb. For each task, say which verb it is:
+#### 1. Find the average of one of the variables.
+summarize()
+#### 2. Add a new column that is the ratio between two variables.
+mutate()
+#### 3. Sort the cases in descending order of a variable.
+arrange()
+#### 4. Create a new data table that includes only those cases that meet a criterion.
+filter()
+#### 5. From a data table with three categorical variables A, B, and C, and a quantitative variable X, produce a data frame that has the same cases but only the variables A and X.
+select()
+
+### Exercise 4.2
+Use the nycflights13 package and the flights data frame to answer the following
+questions: What month had the highest proportion of cancelled fights? What month had the lowest? Interpret any seasonal patterns.
+
+```{r}
+library(dplyr)
+library(nycflights13)
+library(hflights)
+str(hflights)
+```
+```{r}
+cancelled_by_month <- hflights %>% group_by(Month) %>% summarize(n_cancelled = sum(Cancelled)) 
+
+max_min <- cancelled_by_month %>% summarize(max_cancelled=max(n_cancelled), min_cancelled = min(n_cancelled))
+
+months_hi_lo <- cancelled_by_month %>%filter(n_cancelled == max_min$max_cancelled | n_cancelled == max_min$min_cancelled) %>%select(Month, n_cancelled) %>% mutate(label = ifelse(n_cancelled==max_min$max_cancelled, 'highest proportion of cancelled fights', 'lowest proportion of cancelled fights'))
+
+months_hi_lo
+
+```
+It could seem like February has the highest proportion of cancelled flights because usually early in the year there's more chance of snow than in November, which is the month with the lowest proportion of cancelled flights.
+
+### Exercise 4.3
+Use the nycflights13 package and the flights data frame to answer the following
+question: 
+
+#### What plane (specified by the tailnum variable) traveled the most times from New York City airports in 2013? 
+
+```{r}
+str(flights)
+```
+Considering "EWR" is not in NYC, because it is actually in New Jersey and "LGA" is in Queens.
+
+The plane that traveled the most times from New York City in 2013:
+
+```{r}
+x<-flights %>% filter(origin == "JFK" & year == 2013 & is.na(tailnum) == FALSE) %>% group_by(tailnum) %>% summarize(n_trips = n()) %>% select(tailnum, n_trips) %>% filter(n_trips == max(n_trips))
+```
+
+#### Plot the number of trips per week over the year.
+I'm assuming it refers to the plane that had the most number of trips.
+The week of the year can be determined by using format %U from the timestamp of the flight.
+
+```{r}
+trips<-flights %>% filter(tailnum==x$tailnum) %>% mutate(week_of_year = format(as.Date(as.character(as.POSIXct(time_hour))), "%U")) %>% group_by(week_of_year)%>%summarize(n_trips=n())
+
+trips
+```
+```{r}
+library(ggplot2)
+ggplot(trips, aes(x = week_of_year, y = n_trips)) + geom_bar(stat = "identity") + ggtitle("Number of Trips Per Week of Plane with Most Trips") + theme(plot.title = element_text(hjust=0.5))
+```
+
+### Exercise 4.4
+Use the nycflights13 package and the flights and planes tables to answer the following questions: 
+
+#### What is the oldest plane (specified by the tailnum variable) that flew from New York City airports in 2013? 
+
+```{r}
+str(planes)
+```
+
+```{r}
+flights%>%select(tailnum)%>%left_join(select(planes, tailnum, year), by = c("tailnum" = "tailnum"))%>%select(tailnum, year)%>%filter(year==min(year, na.rm=TRUE))%>%distinct()
+
+```
+#### How many airplanes that flew from New York City are included in the planes table?
+An inner join will give us all the planes that are in the flights table. We filter by the one airport in NYC. The total number of airplanes are not necessarily the number of rows (flights), we have to count the unique number of planes.
+
+```{r}
+flights%>%filter(origin=='JFK')%>%select(tailnum)%>%inner_join(select(planes, tailnum), by = c("tailnum" = "tailnum"))%>%summarize(count=n_distinct(tailnum))
+```
